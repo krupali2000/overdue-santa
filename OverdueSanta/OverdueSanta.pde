@@ -1,3 +1,19 @@
+float angle = 0;
+float len = 200;
+PVector anchor;
+PVector position;
+float size = 40;
+
+float changeInAngle = 0.02;
+float diffY = 0;
+float diffX = 0;
+
+float acc = 0.0005;
+float dec = 0.0005;
+
+final float MAX_ANGLE = PI/2.1;
+final float ERROR_ANGLE = PI/100;
+
 class Obstacle {
   float topLeftX, topLeftY, width, height;
   Obstacle() {
@@ -65,6 +81,8 @@ void setup() {
     
     obstacles.add(newObstacle);
   }
+  anchor = new PVector(width/2,height/2);
+  position = new PVector(0,0);
 }
 
 void draw() {
@@ -79,23 +97,112 @@ void draw() {
     obstacle.render();
   }
   player.render();
+  
+  recalcAngle();
+  recalcPosition(angle);
+  drawLine(position, anchor);
+  drawBall(position);
 }
 
 void mousePressed() {
-  
+  accelerate();
 }
 
 void keyPressed(){
- if  (key == 'd'|| key == 'D')
-   ;
- if  (key == 'a'|| key == 'A')
-   ;
- if  (key == 's'|| key == 'S')
-   ;
- if  (key == 's'|| key == 'S')
-   ;
+  if (key == 's'){
+    len = len + 2;
+  }
+  if (key == 'w'){
+    len = len - 2;
+  }
 }
 
 void movePlayer(){
   
 }
+
+void recalcAngle()
+{
+  calcPhysics();
+  if(abs(angle) > MAX_ANGLE)
+  {
+    changeInAngle = changeInAngle*-1;
+    println("Hit");
+  }
+  changeInAngle += acc;
+  println(angle, acc);
+  angle = angle + changeInAngle;
+}
+
+void calcPhysics()
+{
+    if (angle < -ERROR_ANGLE){
+      acc = abs(acc);
+    }
+    else if(angle > ERROR_ANGLE ){
+      acc = -abs(acc);
+    }
+  
+}
+
+void delayed()
+{
+  if (angle < -ERROR_ANGLE){
+    changeInAngle += 0.001;
+    acc -= 0.000001;
+   }
+   else if (angle > ERROR_ANGLE) {
+     changeInAngle -= 0.001;
+     acc += 0.000001;
+   }
+}
+
+void recalcPosition(float angle)
+{
+  position.x = anchor.x+len*sin(angle);
+  position.y = anchor.y+len*cos(angle);
+}
+
+void drawBall(PVector pos)
+{
+  fill(255,255,255);
+  ellipse(pos.x,pos.y,size,size);
+}
+
+void drawLine(PVector pos, PVector anchor)
+{
+  stroke(200);
+  line(pos.x,pos.y,anchor.x,anchor.y); 
+}
+
+void accelerate()
+{
+  calcPhysics();
+  if (angle < -ERROR_ANGLE ){
+    if (abs(acc) < 0.0025){
+      acc += 0.0005;
+    }
+   }
+   else if (angle > ERROR_ANGLE){
+     if(abs(acc) < 0.0025){
+       acc -= 0.0005;
+     }
+   }
+   calcPhysics();
+}
+
+//void decelerate()
+//{
+//  calcPhysics();
+//  if (angle < -ERROR_ANGLE ){
+//    if (abs(acc) > 0.0005){
+//      acc -= 0.0005;
+//    }
+//   }
+//   else if (angle > ERROR_ANGLE){
+//     if(abs(acc) > 0.0005){
+//       acc += 0.0005;
+//     }
+//   }
+//   calcPhysics();
+// }
