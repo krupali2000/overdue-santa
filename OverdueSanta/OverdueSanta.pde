@@ -26,17 +26,25 @@ class Obstacle {
 }
 
 class Player {
-  float x, y, width = 68, height = 100;
+  float x, y, width = 88, height = 100;
   float hookX, hookY, hookLength;
-  float stringAngle;
   boolean movingLeft;
   PImage image;
   Player() {
     image = loadImage("data/Santa.png");
   }
   void render() {
+    float santaAngle = angle;
+    
+    pushMatrix(); // remember current drawing matrix)
+    imageMode(CENTER);
+    
     // Render the player and the hook
-    image(image, x, y, width, height);
+    translate(position.x, position.y);
+    rotate(-santaAngle);
+    image(image, 0, 0, width, height);
+    popMatrix();
+    imageMode(CORNER);
   }
 }
 
@@ -60,7 +68,7 @@ void setup() {
   player.x = width / 2. - player.width / 2.;
   player.y = height - player.height;
   float obstaclesGap = 300;
-  int obstacleStartY = height - 200;
+  int obstacleStartY = height - 300;
   for (int i = obstacleStartY; i > 0; i -= obstaclesGap) {
     Obstacle newObstacle = new Obstacle();
     float obstacleWidth = 300;
@@ -81,11 +89,38 @@ void setup() {
     
     obstacles.add(newObstacle);
   }
-  anchor = new PVector(width/2,height/2);
+  anchor = new PVector(width/2,height/2 + 140);
   position = new PVector(0,0);
 }
 
+boolean isPressingS = false, isPressingW = false;
+
+void keyPressed(){
+  if (key == 's'){
+    isPressingS = true;
+  }
+  if (key == 'w'){
+    isPressingW = true;
+  }
+}
+
+void keyReleased() {
+  if (key == 's'){
+    isPressingS = false;
+  }
+  if (key == 'w'){
+    isPressingW = false;
+  }
+}
+
 void draw() {
+  if (isPressingS) {
+    len = len + 2;
+  }
+  if (isPressingW) {
+    len = len - 2;
+  }
+  
   backgroundShader.set("u_offset_y", worldOffsetY);
   shader(backgroundShader);
   rect(0, 0, width, height); 
@@ -96,25 +131,56 @@ void draw() {
   for (Obstacle obstacle: obstacles) {
     obstacle.render();
   }
-  player.render();
+  
   
   recalcAngle();
   recalcPosition(angle);
   drawLine(position, anchor);
-  drawBall(position);
+  player.x = position.x;
+  player.y = position.y;
+  player.render();
+  
+  PVector anchorToCenterPoint = new PVector(-14, +20);
+  anchorToCenterPoint.rotate(-angle);
+  PVector centerPoint = new PVector(position.x, position.y);
+  centerPoint.add(anchorToCenterPoint);
+  
+  PVector topLeftRotated = new PVector(centerPoint.x, centerPoint.y);
+  PVector topLeftRotatedAdj = new PVector(-24, -40);
+  topLeftRotatedAdj.rotate(-angle);
+  topLeftRotated.add(topLeftRotatedAdj);
+  
+  PVector topRightRotated = new PVector(centerPoint.x, centerPoint.y);
+  PVector topRightRotatedAdj = new PVector(20, -40);
+  topRightRotatedAdj.rotate(-angle);
+  topRightRotated.add(topRightRotatedAdj);
+  
+  PVector bottomRightRotated = new PVector(centerPoint.x, centerPoint.y);
+  PVector bottomRightRotatedAdj = new PVector(20, 26);
+  bottomRightRotatedAdj.rotate(-angle);
+  bottomRightRotated.add(bottomRightRotatedAdj);
+  
+  PVector bottomLeftRotated = new PVector(centerPoint.x, centerPoint.y);
+  PVector bottomLeftRotatedAdj = new PVector(-24, 26);
+  bottomLeftRotatedAdj.rotate(-angle);
+  bottomLeftRotated.add(bottomLeftRotatedAdj);
+  
+  
+  
+  line(topLeftRotated.x, topLeftRotated.y, topRightRotated.x, topRightRotated.y);
+  line(topRightRotated.x, topRightRotated.y, bottomRightRotated.x, bottomRightRotated.y);
+  line(bottomRightRotated.x, bottomRightRotated.y, bottomLeftRotated.x, bottomLeftRotated.y);
+  line(bottomLeftRotated.x, bottomLeftRotated.y, topLeftRotated.x, topLeftRotated.y);
+  
+  circle(centerPoint.x, centerPoint.y, 10.0);
+  fill(0);
 }
 
 void mousePressed() {
-  accelerate();
-}
-
-void keyPressed(){
-  if (key == 's'){
-    len = len + 2;
-  }
-  if (key == 'w'){
-    len = len - 2;
-  }
+  // accelerate();
+  anchor = new PVector(mouseX, mouseY);
+  len = dist(anchor.x, anchor.y, position.x, position.y);
+  angle = asin((position.x - anchor.x) / (len));
 }
 
 void movePlayer(){

@@ -1,0 +1,102 @@
+class Obstacle {
+  float topLeftX, topLeftY, width, height;
+  Obstacle() {
+  }
+  void render() {
+    fill(100);
+    rect(topLeftX, topLeftY, width, height);
+    
+  }
+}
+
+class Player {
+  float x, y, width = 68, height = 100;
+  float hookX, hookY, hookLength;
+  float stringAngle;
+  boolean movingLeft;
+  PImage image;
+  Player() {
+    image = loadImage("data/Santa.png");
+  }
+  void render() {
+    // Render the player and the hook
+    image(image, x, y, width, height);
+  }
+}
+
+ArrayList<Obstacle> obstacles = new ArrayList<Obstacle>();
+Player player;
+PShader backgroundShader;
+
+// We will adjust world offset at the end
+float worldOffsetY = 0;
+
+float leftWallX, rightWallX;
+
+void setup() {
+  size(1000, 800, P2D);
+  frameRate(30);
+  leftWallX = width * (1./5.);
+  rightWallX = width * (4./5.);
+  backgroundShader = loadShader("data/bg.glsl");
+  backgroundShader.set("u_resolution", float(width), float(height));
+  player = new Player();
+  player.x = width / 2. - player.width / 2.;
+  player.y = height - player.height;
+  float obstaclesGap = 200;
+  int obstacleStartY = height - 200;
+  for (int i = obstacleStartY; i > 0; i -= obstaclesGap) {
+    Obstacle newObstacle = new Obstacle();
+    float obstacleWidth = 300;
+    if (((obstacleStartY - i) / obstaclesGap) % 2 == 0) {
+      // Obstacle attached to left wall
+      newObstacle.topLeftX = leftWallX;
+      newObstacle.topLeftY = i;
+      newObstacle.width = obstacleWidth;
+      newObstacle.height = 50;
+    }
+    else {
+      // Obstacle attached to right wall
+      newObstacle.topLeftX = rightWallX - obstacleWidth;
+      newObstacle.topLeftY = i;
+      newObstacle.width = obstacleWidth;
+      newObstacle.height = 50;
+    }
+    
+    obstacles.add(newObstacle);
+  }
+}
+
+void draw() {
+  worldOffsetY += 4;
+  backgroundShader.set("u_offset_y", worldOffsetY);
+  shader(backgroundShader);
+  rect(0, 0, width, height); 
+  resetShader();
+  
+  float wallWidth = width/5;
+  
+  for (Obstacle obstacle: obstacles) {
+    obstacle.render();
+  }
+  player.render();
+}
+
+void mousePressed() {
+  
+}
+
+void keyPressed(){
+ if  (key == 'd'|| key == 'D')
+   ;
+ if  (key == 'a'|| key == 'A')
+   ;
+ if  (key == 's'|| key == 'S')
+   ;
+ if  (key == 's'|| key == 'S')
+   ;
+}
+
+void movePlayer(){
+  
+}
