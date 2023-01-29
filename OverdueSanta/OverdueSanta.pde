@@ -161,13 +161,15 @@ void draw() {
   showGameStartMessage();
   //println(isPlaying);
   if (isPlaying){
-    if (hash(int(System.currentTimeMillis() / 1000)) % 16 == 0) {
-      movementMultiplier = 1;
-    }
-    else {
+    boolean shouldGlitch = (int(millis() / 3000.0) + "").hashCode() % 3 == 0;
+    println(shouldGlitch);
+    if (shouldGlitch) {
       movementMultiplier = -1;
     }
-    worldOffsetY += worldAcc;
+    else {
+      movementMultiplier = 1;
+    }
+    worldOffsetY += worldAcc * 2;
     if (isPressingA) {
       anchor.x -= movement * movementMultiplier;
       //angle = angle - movement/30;
@@ -223,6 +225,11 @@ void draw() {
   
     moveObstacles();
     checkCollision();
+    
+    if(shouldGlitch)
+    {
+       glitch(); 
+    }
   
   }
   if(collision) {
@@ -421,11 +428,12 @@ void calcMovingPoints() {
    ear2X = xCenter-DISTANCE_2*sin(2*PI-(THETA+angle));
 }
 
-boolean glitch(){
-  if (random(0, 6000) <5999){
-    println("glitch");
-    return true;
+void glitch(){
+  //float n = random(200);
+  for (int i = 0; i < 100; i++){
+    stroke(random(255),random(255),random(255));
+    float r = random(width/5, 4*width/5);
+    line(r, 0, r, height);
   }
-  
- return false; 
+  stroke(255);
 }
