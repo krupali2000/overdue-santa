@@ -7,6 +7,8 @@ precision mediump float;
 
 uniform vec2 u_resolution;
 uniform float u_offset_y;
+uniform int u_millis;
+uniform int u_movementmult;
 
 vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
 vec2 mod289(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
@@ -92,6 +94,26 @@ float box(vec2 _st, vec2 _size){
     return uv.x*uv.y;
 }
 
+float noise(vec2 pos, float evolve) {
+    
+    // Loop the evolution (over a very long period of time).
+    float e = fract((evolve*0.01));
+    
+    // Coordinates
+    float cx  = pos.x*e;
+    float cy  = pos.y*e;
+    
+    // Generate a "random" black or white value
+    return fract(23.0*fract(2.0/fract(fract(cx*2.4/cy*23.0+pow(abs(cy/22.4),3.3))*fract(cx*evolve/pow(abs(cy),0.050)))));
+}
+
+float randd(vec2 co){
+    return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
+}
+float rando(vec2 n) {
+    return fract(sin(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);
+}
+
 void main() {
     float BRICK_EDGE_WIDTH = 200.0;
     float GRADIENT_WIDTH = u_resolution.x / 2.0;
@@ -138,5 +160,9 @@ void main() {
         col = col * centerGradientOpacity;
     }
     
-    gl_FragColor=vec4(col,1);
+    if (u_movementmult == -1) {
+        col *= (int(gl_FragCoord.x) + int(gl_FragCoord.y) * 2 + int(u_millis)) % 2;
+    }
+    
+    gl_FragColor = vec4(col, 1);
 }
